@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+
+import sys
+import xml.etree.ElementTree as ET
+import re
+
+
+def set_unit_to_mm(value):
+    units = ['cm', 'em', 'ex', 'in', 'mm', 'pc', 'pt', 'px']
+    unitless = re.compile('|'.join(map(re.escape, units)))
+    return unitless.sub('', value) + 'mm'
+
+
+def convert_attributes(node, attributes):
+    for attribute in attributes:
+        if not attribute in node.attrib:
+            print("attribute \"" + attribute + "\" not found")
+            exit(-2)
+        node.attrib[attribute] = set_unit_to_mm(node.attrib[attribute])
+
+
+def get_input_output():
+    if len(sys.argv) != 3:
+        print("expect 2 arguments: input-file output-file")
+        exit(-1)
+
+    return (sys.argv[1], sys.argv[2])
+
+
+if __name__ == "__main__":
+    (input_file, output_file) = get_input_output()
+    tree = ET.parse(input_file)
+    convert_attributes(tree.getroot(), ['width', 'height'])
+    tree.write(output_file)
